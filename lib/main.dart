@@ -29,6 +29,9 @@ class _MyHomePageState extends State<MyHomePage> {
   String _currentType;
   List<DropdownMenuItem<String>> _dropdownMenuItems;
 
+  List<String> _colors = <String>['', 'red', 'green', 'blue', 'orange'];
+  String _color = '';
+
   @override
   initState() {
     super.initState();
@@ -81,7 +84,39 @@ class _MyHomePageState extends State<MyHomePage> {
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   controller: taskAmountInputController,
                 )),
-                _buildDropdownButton(context)
+                Flexible(
+                  child: FormField(
+                    builder: (FormFieldState state) {
+                      return InputDecorator(
+                        decoration: InputDecoration(
+                          icon: const Icon(Icons.color_lens),
+                          labelText: 'Color',
+                        ),
+                        isEmpty: _color == '',
+                        child: new DropdownButtonHideUnderline(
+                          child: new DropdownButton(
+                            value: _color,
+                            isDense: true,
+                            onChanged: (String newValue) {
+                              setState(() {
+//                              newContact.favoriteColor = newValue;
+                                _color = newValue;
+                                state.didChange(newValue);
+                              });
+                            },
+                            items: _colors.map((String value) {
+                              return new DropdownMenuItem(
+                                value: value,
+                                child: new Text(value),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                )
+
               ],
             )
           ],
@@ -104,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       .add({
                         "item": taskTitleInputController.text,
                         "amount": taskAmountInputController.text,
-                        "type": _currentType
+                        "type": _color
                       })
                       .then((result) => {
                             Navigator.pop(context),
