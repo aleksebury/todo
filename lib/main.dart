@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -126,7 +127,96 @@ class _MyHomePageState extends State<MyHomePage> {
               })
         ],
       ),
-    );
+    ).then((val) {
+      taskTitleInputController.clear();
+      taskAmountInputController.clear();
+      _currentType = _dropdownMenuItems[0];
+    });
+  }
+
+  _showEditDialog(Record record) async {
+    taskTitleInputController.value = TextEditingValue(text: record.item);
+    taskAmountInputController.value = TextEditingValue(text: record.amount);
+    _currentType = record.type;
+
+    await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        contentPadding: const EdgeInsets.all(16.0),
+        content: Column(
+          children: <Widget>[
+            Text("Please edit needed fields"),
+            Column(children: <Widget>[
+              TextField(
+                autofocus: true,
+                decoration: InputDecoration(labelText: 'Item Title*'),
+                controller: taskTitleInputController,
+              ),
+            ]),
+            Row(
+              children: <Widget>[
+                Flexible(
+                    child: TextField(
+                  decoration: new InputDecoration(labelText: "Item amount"),
+                  keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  controller: taskAmountInputController,
+                )),
+                Flexible(
+                  child: FormField(
+                    builder: (FormFieldState state) {
+                      return InputDecorator(
+                        decoration: InputDecoration(
+                          icon: const Icon(Icons.list),
+                          labelText: 'Type',
+                        ),
+                        isEmpty: _currentType == '',
+                        child: new DropdownButtonHideUnderline(
+                            child: _buildDropdownButton(state)),
+                      );
+                    },
+                  ),
+                )
+              ],
+            )
+          ],
+        ),
+        actions: <Widget>[
+          FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                taskTitleInputController.clear();
+                taskAmountInputController.clear();
+                _currentType = _dropdownMenuItems[0];
+                Navigator.pop(context);
+              }),
+          FlatButton(
+              child: Text('Edit'),
+              onPressed: () {
+                if (taskTitleInputController.text.isNotEmpty) {
+                  Firestore.instance
+                      .collection('items')
+                      .document(record.reference.documentID)
+                      .updateData({
+                        "item": taskTitleInputController.text,
+                        "amount": taskAmountInputController.text,
+                        "type": _currentType
+                      })
+                      .then((result) => {
+                            Navigator.pop(context),
+                            taskTitleInputController.clear(),
+                            taskAmountInputController.clear(),
+                            _currentType = _dropdownMenuItems[0]
+                          })
+                      .catchError((err) => print(err));
+                }
+              })
+        ],
+      ),
+    ).then((val) {
+      taskTitleInputController.clear();
+      taskAmountInputController.clear();
+      _currentType = _dropdownMenuItems[0];
+    });
   }
 
   Widget _buildBody(BuildContext context) {
@@ -192,6 +282,7 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(record.item),
           trailing: Text(record.amount + " " + record.type),
           onTap: () => record.reference.delete(),
+          onLongPress: () => _showEditDialog(record),
         ),
       ),
     );
