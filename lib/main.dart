@@ -26,11 +26,8 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController taskTitleInputController;
   TextEditingController taskAmountInputController;
 
+  List<String> _dropdownMenuItems = <String>['', 'л', 'кг', 'уп', 'бут'];
   String _currentType;
-  List<DropdownMenuItem<String>> _dropdownMenuItems;
-
-  List<String> _colors = <String>['', 'red', 'green', 'blue', 'orange'];
-  String _color = '';
 
   @override
   initState() {
@@ -38,14 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     taskTitleInputController = new TextEditingController();
     taskAmountInputController = new TextEditingController();
-    _dropdownMenuItems = <String>['литры', 'килограммы', 'упаковки', 'бутылки']
-        .map((String value) {
-      return new DropdownMenuItem<String>(
-        value: value,
-        child: new Text(value),
-      );
-    }).toList();
-    _currentType = _dropdownMenuItems[0].value;
+    _currentType = _dropdownMenuItems[0];
   }
 
   @override
@@ -64,7 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
   _showDialog() async {
     await showDialog<String>(
       context: context,
-      child: AlertDialog(
+      builder: (BuildContext context) => AlertDialog(
         contentPadding: const EdgeInsets.all(16.0),
         content: Column(
           children: <Widget>[
@@ -89,34 +79,16 @@ class _MyHomePageState extends State<MyHomePage> {
                     builder: (FormFieldState state) {
                       return InputDecorator(
                         decoration: InputDecoration(
-                          icon: const Icon(Icons.color_lens),
-                          labelText: 'Color',
+                          icon: const Icon(Icons.list),
+                          labelText: 'Type',
                         ),
-                        isEmpty: _color == '',
+                        isEmpty: _currentType == '',
                         child: new DropdownButtonHideUnderline(
-                          child: new DropdownButton(
-                            value: _color,
-                            isDense: true,
-                            onChanged: (String newValue) {
-                              setState(() {
-//                              newContact.favoriteColor = newValue;
-                                _color = newValue;
-                                state.didChange(newValue);
-                              });
-                            },
-                            items: _colors.map((String value) {
-                              return new DropdownMenuItem(
-                                value: value,
-                                child: new Text(value),
-                              );
-                            }).toList(),
-                          ),
-                        ),
+                            child: _buildDropdownButton(state)),
                       );
                     },
                   ),
                 )
-
               ],
             )
           ],
@@ -127,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () {
                 taskTitleInputController.clear();
                 taskAmountInputController.clear();
-                _currentType = _dropdownMenuItems[0].value;
+                _currentType = _dropdownMenuItems[0];
                 Navigator.pop(context);
               }),
           FlatButton(
@@ -139,13 +111,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       .add({
                         "item": taskTitleInputController.text,
                         "amount": taskAmountInputController.text,
-                        "type": _color
+                        "type": _currentType
                       })
                       .then((result) => {
                             Navigator.pop(context),
                             taskTitleInputController.clear(),
                             taskAmountInputController.clear(),
-                            _currentType = _dropdownMenuItems[0].value
+                            _currentType = _dropdownMenuItems[0]
                           })
                       .catchError((err) => print(err));
                 }
@@ -166,22 +138,41 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildDropdownButton(BuildContext context) {
-    return DropdownButton<String>(
-        items: _dropdownMenuItems,
-        value: _currentType,
-        onChanged: (val) {
-          setState(() {
-            _currentType = val;
-          });
+  Widget _buildDropdownButton(FormFieldState state) {
+    return DropdownButton(
+      value: _currentType,
+      isDense: true,
+      onChanged: (String newValue) {
+        setState(() {
+          _currentType = newValue;
+          state.didChange(newValue);
         });
+      },
+      items: _dropdownMenuItems.map((String value) {
+        return new DropdownMenuItem(
+          value: value,
+          child: new Text(value),
+        );
+      }).toList(),
+    );
   }
 
   Widget _buildList(BuildContext context, List<DocumentSnapshot> snapshot) {
-    return ListView(
-      padding: const EdgeInsets.only(top: 20.0),
-      children: snapshot.map((data) => _buildListItem(context, data)).toList(),
-    );
+    if (snapshot.isEmpty) {
+      return Align(
+        alignment: Alignment.center,
+        child: Text("Nothing to buy. Relax!",
+            style: TextStyle(
+              fontSize: 16,
+            )),
+      );
+    } else {
+      return ListView(
+        padding: const EdgeInsets.only(top: 20.0),
+        children:
+            snapshot.map((data) => _buildListItem(context, data)).toList(),
+      );
+    }
   }
 
   Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
