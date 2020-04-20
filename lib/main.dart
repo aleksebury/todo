@@ -283,7 +283,8 @@ class _MyHomePageState extends State<MyHomePage> {
       );
     } else {
       return ListView(
-        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.07),
+        padding:
+            EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.07),
         children:
             snapshot.map((data) => _buildListItem(context, data)).toList(),
       );
@@ -302,13 +303,13 @@ class _MyHomePageState extends State<MyHomePage> {
           background: _slideLeftBackground(),
           secondaryBackground: _slideRightBackground(),
           confirmDismiss: (direction) async {
-            if (direction == DismissDirection.endToStart) {
+            if (direction == DismissDirection.startToEnd) {
               record.reference.delete();
               Scaffold.of(context).showSnackBar(SnackBar(
                   content: Text(record.item + " куплено"),
                   backgroundColor: Colors.green));
               return true;
-            } else if (direction == DismissDirection.startToEnd) {
+            } else if (direction == DismissDirection.endToStart) {
               _showEditDialog(record);
             }
             return false;
@@ -326,12 +327,12 @@ class _MyHomePageState extends State<MyHomePage> {
         )));
   }
 
-  Widget _slideRightBackground() {
+  Widget _slideLeftBackground() {
     return Container(
       color: Colors.green,
       child: Align(
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Icon(
               Icons.done_outline,
@@ -343,24 +344,24 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
-              textAlign: TextAlign.left,
+              textAlign: TextAlign.right,
             ),
             SizedBox(
               width: 20,
             ),
           ],
         ),
-        alignment: Alignment.centerLeft,
+        alignment: Alignment.centerRight,
       ),
     );
   }
 
-  Widget _slideLeftBackground() {
+  Widget _slideRightBackground() {
     return Container(
       color: Colors.orange,
       child: Align(
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[
             SizedBox(
               width: 20,
@@ -375,11 +376,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
               ),
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.left,
             ),
           ],
         ),
-        alignment: Alignment.centerRight,
+        alignment: Alignment.centerLeft,
       ),
     );
   }
