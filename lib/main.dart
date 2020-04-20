@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Todo list',
+      title: 'Покупочки',
       home: MyHomePage(),
     );
   }
@@ -29,8 +29,18 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController taskTitleInputController;
   TextEditingController taskAmountInputController;
 
-  List<String> _dropdownMenuItems = <String>['', 'л', 'кг', 'уп', 'бут'];
+  List<String> _dropdownMenuItems = <String>[
+    '',
+    'мл',
+    'л',
+    'г',
+    'кг',
+    'уп',
+    'бут',
+    'шт'
+  ];
   String _currentType;
+  var isLargeScreen = false;
 
   @override
   initState() {
@@ -44,11 +54,24 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(centerTitle: true, title: Text('Todo list')),
-      body: _buildBody(context),
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(30.0),
+          child: AppBar(
+              centerTitle: true,
+              backgroundColor: Colors.green,
+              title: Text('Покупочки'))),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/background.jpeg"),
+            fit: BoxFit.fill,
+          ),
+        ),
+        child: _buildBody(context),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showDialog,
-        tooltip: 'Add',
+        tooltip: 'Добавить',
         child: Icon(Icons.add),
       ),
     );
@@ -61,11 +84,11 @@ class _MyHomePageState extends State<MyHomePage> {
         contentPadding: const EdgeInsets.all(16.0),
         content: Column(
           children: <Widget>[
-            Text("Please fill all fields to create a new item"),
+            Text("Заполните необходимые поля для добавления продукта"),
             Column(children: <Widget>[
               TextField(
                 autofocus: true,
-                decoration: InputDecoration(labelText: 'Item Title*'),
+                decoration: InputDecoration(labelText: 'Название*'),
                 controller: taskTitleInputController,
               ),
             ]),
@@ -73,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 Flexible(
                     child: TextField(
-                  decoration: new InputDecoration(labelText: "Item amount"),
+                  decoration: new InputDecoration(labelText: "количество"),
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   controller: taskAmountInputController,
                 )),
@@ -83,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       return InputDecorator(
                         decoration: InputDecoration(
                           icon: const Icon(Icons.list),
-                          labelText: 'Type',
+                          labelText: 'тип',
                         ),
                         isEmpty: _currentType == '',
                         child: new DropdownButtonHideUnderline(
@@ -98,7 +121,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         actions: <Widget>[
           FlatButton(
-              child: Text('Cancel'),
+              child: Text('Отмена'),
               onPressed: () {
                 taskTitleInputController.clear();
                 taskAmountInputController.clear();
@@ -106,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.pop(context);
               }),
           FlatButton(
-              child: Text('Add'),
+              child: Text('Добавить'),
               onPressed: () {
                 if (taskTitleInputController.text.isNotEmpty) {
                   Firestore.instance
@@ -145,11 +168,11 @@ class _MyHomePageState extends State<MyHomePage> {
         contentPadding: const EdgeInsets.all(16.0),
         content: Column(
           children: <Widget>[
-            Text("Please edit needed fields"),
+            Text("Отредактируйте необходимые поля"),
             Column(children: <Widget>[
               TextField(
                 autofocus: true,
-                decoration: InputDecoration(labelText: 'Item Title*'),
+                decoration: InputDecoration(labelText: 'Название*'),
                 controller: taskTitleInputController,
               ),
             ]),
@@ -157,7 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 Flexible(
                     child: TextField(
-                  decoration: new InputDecoration(labelText: "Item amount"),
+                  decoration: new InputDecoration(labelText: "количество"),
                   keyboardType: TextInputType.numberWithOptions(decimal: true),
                   controller: taskAmountInputController,
                 )),
@@ -167,7 +190,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       return InputDecorator(
                         decoration: InputDecoration(
                           icon: const Icon(Icons.list),
-                          labelText: 'Type',
+                          labelText: 'тип',
                         ),
                         isEmpty: _currentType == '',
                         child: new DropdownButtonHideUnderline(
@@ -182,7 +205,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         actions: <Widget>[
           FlatButton(
-              child: Text('Cancel'),
+              child: Text('Отмена'),
               onPressed: () {
                 taskTitleInputController.clear();
                 taskAmountInputController.clear();
@@ -190,7 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.pop(context);
               }),
           FlatButton(
-              child: Text('Edit'),
+              child: Text('Править'),
               onPressed: () {
                 if (taskTitleInputController.text.isNotEmpty) {
                   Firestore.instance
@@ -253,14 +276,14 @@ class _MyHomePageState extends State<MyHomePage> {
     if (snapshot.isEmpty) {
       return Align(
         alignment: Alignment.center,
-        child: Text("Nothing to buy. Relax!",
+        child: Text("Корзина пуста. Наслаждайтесь отдыхом!",
             style: TextStyle(
               fontSize: 16,
             )),
       );
     } else {
       return ListView(
-        padding: const EdgeInsets.only(top: 20.0),
+        padding: EdgeInsets.only(top: MediaQuery.of(context).size.height * 0.07),
         children:
             snapshot.map((data) => _buildListItem(context, data)).toList(),
       );
@@ -271,19 +294,92 @@ class _MyHomePageState extends State<MyHomePage> {
     final record = Record.fromSnapshot(data);
 
     return Padding(
-      key: ValueKey(record.item),
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey),
-          borderRadius: BorderRadius.circular(5.0),
+        key: ValueKey(record.item),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Container(
+            child: Dismissible(
+          key: Key(record.reference.documentID),
+          background: _slideLeftBackground(),
+          secondaryBackground: _slideRightBackground(),
+          confirmDismiss: (direction) async {
+            if (direction == DismissDirection.endToStart) {
+              record.reference.delete();
+              Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Text(record.item + " куплено"),
+                  backgroundColor: Colors.green));
+              return true;
+            } else if (direction == DismissDirection.startToEnd) {
+              _showEditDialog(record);
+            }
+            return false;
+          },
+          child: ListTile(
+            title: Text(record.item,
+                style: TextStyle(
+                  fontSize: 24,
+                )),
+            trailing: Text(record.amount + " " + record.type,
+                style: TextStyle(
+                  fontSize: 24,
+                )),
+          ),
+        )));
+  }
+
+  Widget _slideRightBackground() {
+    return Container(
+      color: Colors.green,
+      child: Align(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            Icon(
+              Icons.done_outline,
+              color: Colors.white,
+            ),
+            Text(
+              " Куплено",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.left,
+            ),
+            SizedBox(
+              width: 20,
+            ),
+          ],
         ),
-        child: ListTile(
-          title: Text(record.item),
-          trailing: Text(record.amount + " " + record.type),
-          onTap: () => record.reference.delete(),
-          onLongPress: () => _showEditDialog(record),
+        alignment: Alignment.centerLeft,
+      ),
+    );
+  }
+
+  Widget _slideLeftBackground() {
+    return Container(
+      color: Colors.orange,
+      child: Align(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: <Widget>[
+            SizedBox(
+              width: 20,
+            ),
+            Icon(
+              Icons.edit,
+              color: Colors.white,
+            ),
+            Text(
+              " Править",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ],
         ),
+        alignment: Alignment.centerRight,
       ),
     );
   }
