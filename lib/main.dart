@@ -277,9 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return Align(
         alignment: Alignment.center,
         child: Text("Корзина пуста. Наслаждайтесь отдыхом!",
-            style: TextStyle(
-              fontSize: 16,
-            )),
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
       );
     } else {
       return ListView(
